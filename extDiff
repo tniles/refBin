@@ -1,0 +1,38 @@
+#!/bin/bash --
+################################################################################
+# wrapper for external git diff (cygwin using windows git, e.g. msys-git)
+# Requires: in ~/.gitconfig, add
+#                   [diff]
+#                       external = extDiff
+# echo $@
+# "diff", "path", "old-file", "old-hex", "old-mode", "new-file", "new-hex", "new-mode"
+################################################################################
+
+[ $# -eq 7 ]
+    tmpPath="C:\Users\tniles\AppData\Local\Temp\kdiff"
+    # in case file exists
+    #rm -f $tmpPath
+    mkdir -p $tmpPath
+    cp "$2" $tmpPath
+
+    oldVer=$2
+    oldVer=${oldVer/#*tmp\//}
+
+    oldVer=${oldVer}
+    tmpPathVar=${tmpPath}
+    oldVer=$tmpPathVar\\$oldVer
+
+    newVer="$5"
+    #echo "Comparing $oldVer with $newVer ..."
+    cygstart ~/bin/kdiff3 $oldVer $newVer
+    # there's got to be a better way to do this... (block until kdiff is done)
+    sleep 10
+    # clean up
+    rm -f $oldVer
+exit 0
+
+#
+#linux side git extDiff
+# #!/bin/sh
+#[ $# -eq 7 ] && kdiff3 “$2” “$5”
+#

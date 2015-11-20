@@ -1,0 +1,26 @@
+#! /bin/bash
+################################################################################
+# builds the tags file and cscope database
+#
+# Could be used with the following alias:
+# alias csel='pushd ~/src; cscope -d -p5; popd'
+################################################################################
+
+# we use this command to get a list of all source files to be processed.
+findcmd='find . -not -path "*/public/*" -and -not -path "*/targets/*" -and \( -name "*.cpp" -o -name "*.h" -o -name "*.c" -o -name "*.hpp" -o -name "*.cc" \)'
+
+printf 'building tags file. this may take a while.\n'
+eval $findcmd > ctags.files
+ctags -o tags.out -L ctags.files
+mv tags.out tags
+
+printf '%d seconds elapsed.\n' $SECONDS
+printf 'building cscope database. this may take a while.\n'
+
+# put quotes around each file path for cscope
+sed -e 's/.*/\"&\"/' ctags.files > cscope.files
+cscope -b -U -i cscope.files
+rm ctags.files cscope.files
+
+printf 'done. %d seconds elapsed.\n' $SECONDS
+

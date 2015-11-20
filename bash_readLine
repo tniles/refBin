@@ -1,0 +1,18 @@
+value=0;
+
+while read line
+    do
+        value=`expr $value + 1`;
+        echo $value;
+        echo $line;
+    done < "myfile"
+
+echo $value;
+
+#
+# To copy all files into temp: 
+# while read line; do cp $line ./; echo "cp'd $line\n"; done < ~/temp
+#
+# To copy all files back out:
+# while read line; do cp ${line##*/} $line; echo "cp'd $line\n"; done < ~/temp
+#

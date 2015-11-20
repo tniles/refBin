@@ -1,0 +1,22 @@
+#!/bin/bash
+# DESCRIPTION:  generate pdfs of every bom file in the working directory
+# DEPENDS:      libreoffice
+# INPUT:        none
+# OUTPUT:       prints/*Bom.pdf
+#
+# Example/Usage: printBom
+##############################################################################################
+
+# create output dir
+printDir="prints"
+if [[ ! -e $printDir ]] ; then
+    mkdir $printDir
+fi
+
+# convert all to pdf sans gui
+libreoffice --headless --convert-to pdf *Bom.ods
+
+# mv to output dir
+mv *Bom.pdf $printDir
+
+exit 0

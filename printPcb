@@ -1,0 +1,49 @@
+#!/bin/bash
+# DESCRIPTION:  generate gerbers of for the gEDA pcb files supplied, place in 'gerbers', and
+#               generate pdfs of for the gEDA pcb files supplied, place in 'prints'
+# DEPENDS:      none
+# INPUT:        *.pcb
+# OUTPUT:       gerbers/*
+#               prints/*Layout.pdf
+#
+# Example/Usage: printPcb *.pcb
+#                printPcb main*.pcb
+#                printPcb sub*.pcb
+##############################################################################################
+
+# create output dirs
+gerbDir="gerbers"
+if [[ ! -e $gerbDir ]] ; then
+    mkdir $gerbDir
+fi
+printDir="prints"
+if [[ ! -e $printDir ]] ; then
+    mkdir $printDir
+fi
+
+cd $gerbDir
+
+# call pcb for gerbers
+for fileName in "$@"; do
+    pcb -x gerber --gerberfile "${fileName%.*}" "../$fileName"
+done
+
+cd ..
+
+# call pcb for ps
+for fileName in "$@"; do
+    pcb -x ps --psfile "${fileName%.*}.ps" "$fileName"
+done
+
+# convert the ps to pdf and remove the intermediate ps file
+for fileName in "$@"; do
+    ps2pdf -sPAPERSIZE=letter "${fileName%.*}".ps
+    rm "${fileName%.*}".ps
+done
+
+# mv to print folder and append 'Layout'
+for fileName in "$@"; do
+    mv "${fileName%.*}".pdf $printDir/"${fileName%.*}"Layout.pdf
+done
+
+exit 0

@@ -1,0 +1,138 @@
+#!/bin/bash --
+
+# Script to backup to your home directory any checked-out clearcase files.
+# Requires: IBM clearcase and IBM cleartool cli tool
+# Tyler Niles
+# 1/24/2012
+
+bkupTopDir=~/bkup
+bkupDate=`eval date +%Y%m%d`
+bkupSubDir=$bkupTopDir/"cc_co_bkup_"$bkupDate
+
+if [ $# -gt 0 ]
+then
+    echo ""
+    echo -e "Usage :\taccepts no arguments."
+    echo ""
+    echo -e "\tThis script is useful for making a quick backup of any"
+    echo -e "\tClearCase files you have checked-out. This is especially"
+    echo -e "\tuseful in cases where CC server maintenance is impending,"
+    echo -e "\tyou are leaving for the weekend, or are simply paranoid."
+    echo ""
+    echo -e "\tIf they don't already exist, this script will create"
+    echo -e "\tdirectories located at" 
+    echo -e "\t\t$bkupSubDir"
+    echo -e "\tand will copy your co'd files there."
+    echo ""
+    echo "Enhancements yet to be implemented:"
+    echo ""
+    echo -e "\t1) When backing up files with the same name but from different"
+    echo -e "\t   paths (e.g. from different targets/platforms), tack on the"
+    echo -e "\t   target app/platform at the end of the copy."
+    echo -e "\t   Currently, an incremented number is added to the file name."
+    echo ""
+    echo -e "\t2) Add a switch to turn off logging. The script's default"
+    echo -e "\t   behaviour is to record a log of which files got copied and"
+    echo -e "\t   how they were renamed. Logging should be on by default."
+    echo ""
+    echo -e "\t3) Other ideas here..."
+    echo ""
+    exit 0
+fi
+
+# Parent Dir detection and creation
+if [ ! -d $bkupTopDir ]
+then
+    mkdir -m 766 $bkupTopDir
+    echo ""
+    echo "Directory does not exist... making dir $bkupTopDir"
+else
+    echo ""
+    echo "Directory does exist... using dir $bkupTopDir"
+fi
+
+# Sub Dir detection and creation
+if [ ! -d $bkupSubDir ]
+then
+    mkdir -m 766 $bkupSubDir
+    echo "Directory does not exist... making dir $bkupSubDir"
+else
+    echo ""
+    echo "*** Directory $bkupSubDir already exists! ***"
+    echo -ne "\tDo you wish to overwrite? [y]es [n]o : "
+    read response
+    case $response in
+        [yY]* ) echo -e "\tOverwriting $bkupSubDir now..."
+                # do a remove all to avoid naming/overwriting issues (see below)
+                `rm -f $bkupSubDir/*`
+                ;;
+        [nN]* ) echo "Exiting..."
+                exit 0
+                ;;
+        * )     echo "Invalid option given." 
+                echo "Exiting..." 
+                exit 0
+                ;;
+    esac
+fi
+
+# copy log init
+# Enhancement: provide a switch for users to turn off logging
+logFile=$bkupSubDir/bkup.log
+if [ -e $logFile ]
+then
+    `rm -f $logFile`
+else
+    `touch $logFile`
+    echo "%% Activity log for execution of script `basename $0` %%" > $logFile
+    echo " % Time backup occurred: `date` %" >> $logFile
+fi
+
+# CC command (ctmegot) to find co'd files
+fileList=`cleartool lsco -avo -cview -short | sort -k 5`
+echo "" | tee -a $logFile
+echo "Files to backup:" | tee -a $logFile
+echo "$fileList" | tee -a $logFile
+#echo ${#fileList}  # length in characters
+echo "" | tee -a $logFile
+
+# copy 'em! 
+# Note: take care not to overwrite target files with macthing names.
+# Enhancement: when renaming, tack on the target platform at the end of the copy
+for x in $fileList
+do
+    fileNum=0
+    oldFileName=${x##*/}             #pathOfFile=${x%.*}     #extOfFile=${x##*.}
+    # check for file with similar name
+    if [ -e $bkupSubDir/$oldFileName ]
+    then
+        # backup file from other target exists, so rename with a #
+        ((fileNum++))
+        bkupFileList=`ls $bkupSubDir`
+        for y in $bkupFileList
+        do
+            if [ -e $bkupSubDir/$oldFileName.$fileNum ]
+            then
+                ((fileNum++))
+            fi
+        done
+        newFileName=$oldFileName.$fileNum
+    else
+        # no existing file, so no rename required
+        newFileName=$oldFileName
+    fi
+    `cp $x $bkupSubDir/$newFileName`
+    echo ">>  $x copied to" | tee -a $logFile
+    echo "    $bkupSubDir/$newFileName" | tee -a $logFile
+    echo "" | tee -a $logFile
+done
+
+# declare log
+if [ -e $logFile ]
+then
+    echo "* Actions logged to file $logFile *"
+    echo ""
+fi
+
+# All done!
+echo "BACKUP COMPLETED"

@@ -1,0 +1,16 @@
+#!/bin/bash
+# DESCRIPTION:  call all scripts for printing deliverables for a geda circuit project
+# DEPENDS:      printSch, printPcb, printBom
+# INPUT:        none
+# OUTPUT:       prints/*.pdf
+#
+# Example/Usage: printAll
+##############################################################################################
+
+printSch *.sch
+
+printPcb *.pcb
+
+printBom
+
+exit 0

@@ -1,0 +1,55 @@
+#!/bin/bash
+# DESCRIPTION:  generate 11x17 landscape pdfs of the gEDA gSchem files supplied
+# DEPENDS:      gedaPrint.scm
+# INPUT:        *.sch
+# OUTPUT:       prints/*.pdf
+#
+# ASSUMES:      MULTIPAGE SCHEMATICS MUST BE SUFFIXED "_n.SCH" (where n=1,2,3,4,...,n-1,n)
+#
+# Example/Usage: printSch *.sch
+#                printSch main*.sch
+#                printSch sub*.sch
+##############################################################################################
+
+# first step: make sure arguments (file) exists
+for fileName in "$@"; do
+    if [[ ! -e $fileName ]] ; then
+        echo "File $fileName does not exist; exiting."
+        exit 1;
+    fi
+done
+
+# create output dir
+printDir="prints"
+if [[ ! -e $printDir ]] ; then
+    mkdir $printDir
+fi
+
+# locate gedaPrint.scm in binLin
+# This may be a bit hacky, but it should work for most users/use cases.
+gedaScm=`locate gedaPrint.scm | command grep -m 1 binLin`
+echo -e "\tUsing $gedaScm"
+
+# call the guile/scheme script for geda to print each schematic as a ps file
+for fileName in "$@"; do
+    gschem -p -o "${fileName%.*}".ps -s "$gedaScm" "$fileName"
+done
+
+cd $printDir
+# convert the ps to pdf and remove the intermediate ps file
+for fileName in "$@"; do
+    ps2pdf -sPAPERSIZE=11x17 "../${fileName%.*}".ps
+    rm "../${fileName%.*}".ps
+done
+
+# find and operate on any multipage schematics available
+fileName=`echo "${fileName%_[0-9*].*}"`
+fileList=(`command ls | command grep "$fileName\_[0-9*]*.pdf" | sort -V | tr "\n" " "`)
+# perform a basic check to make sure we have at least one element in the array to operate on
+if [[ -e "$fileList" ]] ; then 
+    # pdftk will successfully perform the cat op on one or more files
+    pdftk "${fileList[@]}" cat output $fileName.pdf
+    rm "${fileList[@]}"
+fi
+
+exit 0
