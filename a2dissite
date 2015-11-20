@@ -1,0 +1,31 @@
+#!/bin/bash
+if ! test -d /etc/httpd/sites-available ; then
+	mkdir /etc/httpd/sites-available
+fi
+if ! test -d /etc/httpd/sites-enabled ; then
+	mkdir /etc/httpd/sites-enabled
+fi
+
+avail=/etc/httpd/sites-enabled/"$1"
+enabled=/etc/httpd/sites-enabled
+site=`ls /etc/httpd/sites-enabled`
+
+if [ "$#" != "1" ]; then
+	echo "Usage: a2dissite virtual_site"
+	echo -e "\nAvailable virtual hosts:\n$site"
+	exit 0
+else
+	if test -e $avail ; then 
+		rm $avail
+	else
+		#echo -e "Vhost $avail does not exist! Exiting!\n$site"
+		exit 0
+	fi
+
+	if test -e $enabled/"$1" ; then
+		echo "Error! Could not remove $avail vhost!"
+	else
+		echo -e "Apache server restart required\n\tservice httpd restart"
+	fi
+fi
+exit 0
