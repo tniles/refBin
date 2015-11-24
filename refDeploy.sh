@@ -28,8 +28,14 @@
 #echo $archiveDirs
 ###################
 
+lBin=`which locate`
+lVer=`locate --version`
+
 SAVEIFS=$IFS                # backup IFS for later restore
 IFS=$(echo -en "\n\b")      # set to newline for find command
+
+# process inputs:
+# shopt
 
 # archive LUT, requires bash 4.0+ associative arrays
 # whole array: ${!archiveLut[@]}
@@ -49,6 +55,17 @@ archiveLut+=(
 #           ["refCkt"]="${HOME}/Downloads/ckt"
 # But be sure 'locate -n 1 ref*' returns what you would expect.
 
+# Confirm paths match the user's expectations:
+echo "These are the reported paths; confirm before proceeding:"
+archiveNum=${#archiveLut[@]}
+echo "Paired entries in table: $archiveNum"
+for key in ${!archiveLut[@]}; do
+    echo -e "Contents of ${key}\twill be linked to: ${archiveLut[${key}]}"
+done
+# user input: continue or exit
+# echo -e "Continue? [yes|no]"
+exit 0
+
 # CLEAN option (clean out links, then exit)
 if [[ $1 == "clean" ]] ; then
     returnDir=`pwd`         # save so we can return before exit
@@ -63,8 +80,8 @@ if [[ $1 == "clean" ]] ; then
             #if [[ "directory" == `file "${fh}" | awk '{print $2}'` ]] ; then
                 #echo "dir detected: `pwd` ${fh}"
             #else
-                #echo "rm "${fh}""
-                rm "${fh}"
+                echo "rm "${fh}""
+                #rm "${fh}"
             #fi
         done
         cd $returnDir
@@ -77,14 +94,11 @@ fi
  
 # First, create system dirs
 for key in ${!archiveLut[@]}; do
-    echo -e "key: ${key}\tvalue: ${archiveLut[${key}]}"
+    #echo -e "key: ${key}\tvalue: ${archiveLut[${key}]}"
     if [[ ! -e "${archiveLut[${key}]}" ]] ; then
         mkdir -pv ${archiveLut[${key}]}
     fi
 done
-
-archiveNum=${#archiveLut[@]}
-echo "Paired entries in table: $archiveNum"
 
 returnDir=`pwd`         # save so we can return before exit
 
@@ -95,7 +109,8 @@ for key in ${!archiveLut[@]}; do
     for fh in `ls -A | grep -v  -e "\.git*" -e ".*\.swp" -e "hiddenFilesHere" -e "tnilesProfile*" -e "README*"`; do
         # -n required so dirs don't link recursively (i.e. on multiple invocations of this
         # script)!
-        ln -s -f -n -v $target/"${fh}" ${archiveLut[${key}]}/"${fh}"
+        #ln -s -n -v $target/"${fh}" ${archiveLut[${key}]}/"${fh}"
+        echo "ln -s -n -v $target/"${fh}" ${archiveLut[${key}]}/"${fh}""
     done
     cd $returnDir
 done
