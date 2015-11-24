@@ -89,8 +89,10 @@ archiveLut+=(
 echo -e "\nThese are the reported paths; PLEASE CONFIRM BEFORE PROCEEDING:\n"
 echo "Paired entries in table: ${#archiveLut[@]}"
 for key in ${!archiveLut[@]}; do
-    echo -e "Contents of ${key}\twill be linked to: "${archiveLut[${key}]}""
+    echo -e "Contents of `locate -n 1 ${key}`\twill be linked to: "${archiveLut[${key}]}""
 done
+echo -e "\nWARNING! Do not proceed unless all pairs of paths are complete and correct."
+echo -e "  e.g. \"Contents of /home/user/setupFiles/refBin  will be linked to: /home/user/someDir\""
 # user input: continue or exit
 userIn=" "
 echo -en "\nContinue? "
