@@ -84,6 +84,13 @@ archiveLut+=(
 # Add more entries at the end of the list
 #           ["refCkt"]="${HOME}/Downloads/ckt"
 # But be sure 'locate -n 1 ref*' returns what you would expect.
+# Note 2015-11-25: the reason this check is necessary is because it can be a nightmare if
+# things start linking random files to random places. Locate is usually a pretty good utility
+# from what I've seen. On encrypted partitions, however, there are some issues. For one, it is
+# necessary to remove all 'ecrypt*' references from /etc/updatedb.conf and rerun updatedb.
+# There is a significant performance hit for this script by virtue of the decryption which
+# needs to take place for locate to operate on the ecryptfs. Using this check and making sure
+# locate can truly find the reference directories helps ensure correct operation.
 
 # Confirm paths match the user's expectations:
 echo -e "\nThese are the reported paths; PLEASE CONFIRM BEFORE PROCEEDING:\n"
