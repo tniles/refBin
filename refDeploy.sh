@@ -100,6 +100,7 @@ archiveLut+=(
 echo -e "\nThese are the reported paths; PLEASE CONFIRM BEFORE PROCEEDING:\n"
 echo "Paired entries in table: ${#archiveLut[@]}"
 for key in ${!archiveLut[@]}; do
+# allow full table: 'if -z/unset $locateCmd ; then ... '
     echo -e "Contents of `locate --limit 1 ${key}`\twill be linked to: "${archiveLut[${key}]}""
 done
 echo -e "\nWARNING! Do not proceed unless all pairs of paths are complete and correct."
