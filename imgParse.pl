@@ -22,7 +22,7 @@
 
 use 5.010;
 use warnings;
-#use strict;
+use strict;
 
 use POSIX qw(ceil floor);
 
@@ -42,7 +42,9 @@ my $inPrefix = "S31";
 my $outPrefix   = "CMD = ";
 my $outSuffix   = " ==";
 my $outCommand  = "0x1001 ";
+my $outPayload;
 
+my $data;
 
 ###########
 # program #
@@ -84,7 +86,7 @@ say "     There are " . (length $data) .
     " blocks to be transferred.";
 
 my $outBlockNum = 0;
-for ( $ijk = 0; $ijk < (length $data); $ijk += $blockSize )
+for ( my $ijk = 0; $ijk < (length $data); $ijk += $blockSize )
 {
   $outPayload = substr ( $data, $ijk, $blockSize );
   if ( length $outPayload < 32 )
