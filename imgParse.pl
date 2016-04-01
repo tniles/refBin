@@ -86,6 +86,7 @@ say "     There are " . (length $data) .
     " blocks to be transferred.";
 
 my $outBlockNum = 0;
+my $fmtBlockNum;
 for ( my $ijk = 0; $ijk < (length $data); $ijk += $blockSize )
 {
   $outPayload = substr ( $data, $ijk, $blockSize );
@@ -96,9 +97,9 @@ for ( my $ijk = 0; $ijk < (length $data); $ijk += $blockSize )
     $outPayload = substr ( $outPayload, 0, $blockSize );
   }
   #say CMDS $outPayload;      # good for debugging correct block size, padding, etc.
-  $outPayload = ($outBlockNum++) . " " . $outPayload;
-  say CMDS $outPrefix . $outCommand . $outPayload . $outSuffix;
-
+  $fmtBlockNum = sprintf "%04X", $outBlockNum++;    # swap bytes for little endian format
+  $fmtBlockNum =~ s/(..)(..)/$2$1/ ;
+  say CMDS $outPrefix . $outCommand . $fmtBlockNum . $outPayload . $outSuffix;
 }
 
 say "All Done!";
@@ -109,4 +110,4 @@ say "All Done!";
 ###########
  
 close CMDS;
-exit 0
+exit 0;
