@@ -11,8 +11,7 @@
 #     Break binary into block size chunks
 #     Block by block, prepend:
 #         System Command . Block Number . Data Chunk
-#     Package into predetermined command format
-#         {"Seq":1,"Src":255,"Dst":1,"Type":262,"Payload":"<<insertResultHere>>","Crc":0}
+#     Package into predetermined command format (see OUTPUT FORM, below)
 #     Write line to out file
 #
 #############################################################################################
@@ -39,11 +38,10 @@ my $blockSize = 32;
 
 my $inPrefix = "S31";
 
-# FORM: $outPrefix . $outCommand . $outBlockNum . $outPayload . $outSuffix
-my $outPrefix   = "CMD=";
-my $outSuffix   = "==";
-my $outCommand  = "0x1001";
-my $outBlockNum = "0x0000";
+# OUTPUT FORM: $outPrefix . $outCommand . ($outBlockNum . $outPayload) . $outSuffix
+my $outPrefix   = "CMD = ";
+my $outSuffix   = " ==";
+my $outCommand  = "0x1001 ";
 
 
 ###########
@@ -85,6 +83,7 @@ say "     There are " . (length $data) .
     " number of bytes and " . ceil((length $data) / $blockSize) .
     " blocks to be transferred.";
 
+my $outBlockNum = 0;
 for ( $ijk = 0; $ijk < (length $data); $ijk += $blockSize )
 {
   $outPayload = substr ( $data, $ijk, $blockSize );
@@ -94,8 +93,9 @@ for ( $ijk = 0; $ijk < (length $data); $ijk += $blockSize )
     $outPayload .= (0 x 32);
     $outPayload = substr ( $outPayload, 0, $blockSize );
   }
-  say CMDS $outPayload;      # good for debugging correct block size, padding, etc.
-  #say CMDS $outPrefix . $outCommand . $outBlockNum . $outPayload . $outSuffix;
+  #say CMDS $outPayload;      # good for debugging correct block size, padding, etc.
+  $outPayload = ($outBlockNum++) . " " . $outPayload;
+  say CMDS $outPrefix . $outCommand . $outPayload . $outSuffix;
 
 }
 
