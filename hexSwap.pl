@@ -8,12 +8,11 @@ use warnings;
 use strict;
 
 my $xData;
-my $yData;
-my $zData;
+my @yData;
 
 for ( my $ijk = 998; $ijk < 1001; $ijk++ )
 {
-  printf ( "\n%4d is hex " . (sprintf "0x%04X", $ijk) . "\n", $ijk );
+  printf ( "\nDecimal %4d is hex " . (sprintf "0x%04X", $ijk) . "\n", $ijk );
 
   # with byte swap
   say "These numbers (bytes swapped) should match...";
@@ -22,8 +21,9 @@ for ( my $ijk = 998; $ijk < 1001; $ijk++ )
   # BindOp leaves $_ alone, match stuffs $_ & is then used as input for reverse, prints.
   say reverse ((sprintf "%04X", $ijk) =~ /(..)(..)/) ;        # from perlmonks' webpage
 
-  $yData = (reverse ((sprintf "%04X", $ijk) =~ /(..)(..)/) );
-  say $yData;                         # does NOT match
+  @yData = reverse ((sprintf "%04X", $ijk) =~ /(..)(..)/) ;
+  say @yData;                         # does NOT match if scalar ($yData), 
+                                      # does match if list (@yData).
 
   $xData = sprintf "%04X", $ijk;
   $xData =~ s/(..)(..)/$2$1/ ;
@@ -31,8 +31,8 @@ for ( my $ijk = 998; $ijk < 1001; $ijk++ )
 
   $_ = sprintf "%04X", $ijk;
   /(..)(..)/;
-  $zData = $2 . $1 ;
-  say $zData;                         # does match
+  $xData = $2 . $1 ;
+  say $xData;                         # does match
 }
 
 exit 0;
