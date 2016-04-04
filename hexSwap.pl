@@ -10,7 +10,8 @@ use strict;
 my $xData;
 my @yData;
 
-for ( my $ijk = 998; $ijk < 1001; $ijk++ )
+#for ( my $ijk = 998; $ijk < 1001; $ijk++ )
+for my $ijk (998 .. 1000 )
 {
   printf ( "\nDecimal %4d is hex " . (sprintf "0x%04X", $ijk) . "\n", $ijk );
 
