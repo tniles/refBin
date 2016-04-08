@@ -34,7 +34,8 @@ use POSIX qw(ceil floor);
 # vars    #
 ###########
  
-my $blockSize = 32;
+my $blockSizeInBytes = 32;
+my $blockSize = $blockSizeInBytes * 2;    # for srec, x2 because each char is a nibble
 
 my $inPrefix = "S31";
 
@@ -55,6 +56,13 @@ if ( @ARGV < 1 )
   die "Must supply input image file; exiting $!"
 }
 
+# file with data only (use for debug)
+if ( ! open DATA, ">", "dbgData.txt" )
+{
+  die "$0: Cannot open output file. $!"
+}
+
+# file with data commands (use as batch file)
 if ( ! open CMDS, ">", "dbgDownload.txt" )
 {
   die "$0: Cannot open output file. $!"
@@ -75,29 +83,41 @@ say "Processing File...";
 while (<>)
 {
   next if $. == 1;        # srec: skip first line (header of srec)
+  if ( /^(?!$inPrefix)/ )     # negative lookahead to forgo any metadata in the srec
+  {
+    #say "found the last line $.";
+    next;
+  }
   chomp;
   s/^$inPrefix//g;        # srec: remove prefix
   s/(...)$//g;            # srec: remove two char checksum and carriage return suffix
   $data .= $_;            # grab all image data
 }
 
+my $numBlocks = ceil((length $data) / $blockSize) ;
 say "     There are " . (length $data) .
-    " number of bytes and " . ceil((length $data) / $blockSize) .
+    " number of bytes and " . $numBlocks .
     " blocks to be transferred.";
 
+my $fmtBlockSize = sprintf "%04X", $blockSizeInBytes;   # swap bytes for little endian format
+    $fmtBlockSize =~ s/(..)(..)/$2$1/ ;
+my $fmtNumBlocks = sprintf "%04X", $numBlocks;          # swap bytes for little endian format
+    $fmtNumBlocks =~ s/(..)(..)/$2$1/ ;
+
 my $outBlockNum = 0;
-my $fmtBlockNum;
+my $fmtBlockNum = 0;
 for ( my $ijk = 0; $ijk < (length $data); $ijk += $blockSize )
 {
   $outPayload = substr ( $data, $ijk, $blockSize );
-  if ( length $outPayload < 32 )
+  if ( length $outPayload < $blockSize )
   {
     # pad with zeroes
-    $outPayload .= (0 x 32);
+    $outPayload .= (0 x $blockSize);
     $outPayload = substr ( $outPayload, 0, $blockSize );
   }
-  #say CMDS $outPayload;      # good for debugging correct block size, padding, etc.
-  $fmtBlockNum = sprintf "%04X", $outBlockNum++;    # swap bytes for little endian format
+  say DATA $outPayload;      # good for debugging correct block size, padding, etc.
+  # swap bytes for little endian format, and make it 1-based
+  $fmtBlockNum = sprintf "%04X", ($outBlockNum++ + 1);
   $fmtBlockNum =~ s/(..)(..)/$2$1/ ;
   say CMDS $outPrefix . $outCommand . $fmtBlockNum . $outPayload . $outSuffix;
 }
