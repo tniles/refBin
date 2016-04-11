@@ -129,5 +129,6 @@ say "All Done!";
 # cleanup #
 ###########
  
+close DATA;
 close CMDS;
 exit 0;
