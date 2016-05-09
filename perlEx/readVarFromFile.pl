@@ -15,6 +15,8 @@ use 5.010 ;
 use warnings ;
 use strict ;
 
+use Scalar::Util qw(looks_like_number) ;
+
 
 ###########
 #  vars   #
@@ -46,10 +48,29 @@ while (<CFG>)
 
   # grab whitespace delimited words
   my ($varName, $varVal) = ( split /\s+/ , $_ );
-  print "$varName = $varVal\n";
+  if ( defined $varName && defined $varVal )
+  {
+    print "$varName = $varVal\n";
+  }
+  else
+  {
+    die "$0: malformed cfg file... require whitespace delimited key-value pair" ;
+  }
+
+  # parm checking on input vals
+  if ( ! looks_like_number($varVal) || ! ($varVal =~ /^-?\d+\z/) )
+  {
+    # oops... alpha{numeric} or non-integer
+    die "$0: Require numeric integer variable... $!" ;
+  }
+  elsif ( 0 > $varVal )
+  {
+    # oops... want a positive number
+    die "$0: Require non-zero integer variable... $!" ;
+  }
 
   # now assign expected parameters
-  if ( $varName =~ /numFarms/ )
+  if ( $varName =~ /numDogs/ )
   {
     $numDogs = $varVal;
   }
@@ -60,15 +81,21 @@ while (<CFG>)
 
 }
 
-say $numBytes ;
-say $numDogs ;
+# verify we collected everything we expected
+if ( ! defined $numBytes || ! defined $numDogs )
+{
+  # oops... forgot to define something in our cfg file
+  die "$0: Require variables 'numBytes' and 'numDogs' to be read from file 'varCfg.txt'" ;
+}
 
-say "All Done!" ;
+# output results
+say "We have $numBytes bytes, and we have $numDogs dogs." ;
 
 
 ###########
 # cleanup #
 ###########
  
+say "All Done!" ;
 close CFG;
 exit 0;

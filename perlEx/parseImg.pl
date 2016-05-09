@@ -37,7 +37,7 @@ use POSIX qw(ceil floor);
 my $blockSizeInBytes = 32;
 my $blockSize = $blockSizeInBytes * 2;    # for srec, x2 because each char is a nibble
 
-my $inPrefix = "S31";
+my $inPrefix = "S3";
 
 # OUTPUT FORM: $outPrefix . $outCommand . ($outBlockNum . $outPayload) . $outSuffix
 my $outPrefix   = "CMD = ";
@@ -75,8 +75,8 @@ say "Processing File...";
 
 #while (defined($line = <>))
 #{
-  #chomp($line);
-  #say CMDS "Here's your line: $line";
+#  chomp($line);
+#  say CMDS "Here's your line: $line";
 #}
 # Equivalently:
 
@@ -90,14 +90,16 @@ while (<>)
   }
   chomp;
   s/^$inPrefix//g;        # srec: remove prefix
+  s/^(..)//g;             # srec: remove two-byte srec char count
+  s/^(........)//g;       # srec: remove four-byte srec address
   s/(...)$//g;            # srec: remove two char checksum and carriage return suffix
   $data .= $_;            # grab all image data
 }
 
 my $numBlocks = ceil((length $data) / $blockSize) ;
-say "     There are " . (length $data) .
-    " number of bytes and " . $numBlocks .
-    " blocks to be transferred.";
+say "    The image has " . floor((length $data)/2)  .   # div 2 bc of hex chars, floor for odd case
+    " bytes (" . ceil(floor((length $data)/2)/1024) . "K) which will require " . $numBlocks .
+    " blocks to be transferred in " . $blockSizeInBytes . " byte blocks.";
 
 my $fmtBlockSize = sprintf "%04X", $blockSizeInBytes;   # swap bytes for little endian format
     $fmtBlockSize =~ s/(..)(..)/$2$1/ ;
