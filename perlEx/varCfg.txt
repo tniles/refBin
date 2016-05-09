@@ -1,0 +1,4 @@
+numBytes       22
+numFarms   		16
+numDogs 	      2
+numBytes      500
