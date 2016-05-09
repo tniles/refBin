@@ -41,12 +41,12 @@ until [[ -z "$1" ]] ; do
             testFlag=1
             echo -e "\n## ENTERING TEST MODE (no data written/removed) ##\n"
             ;;
-        -h | --help)
+        -h | --help | *)
             echo "$0 usage:"
             echo "refDeploy [-cth]"
-            echo "          c: clean system, removes all known links to archives"
-            echo "          t: test mode, no data will be written or deleted"
-            echo "          h: display this help"
+            echo " -c,--clean: clean system, removes all known links to archives"
+            echo " -t, --test: test mode, no data will be written or deleted"
+            echo " -h, --help: display this help"
             exit 0;
             ;;
     esac
@@ -64,8 +64,6 @@ done
 SAVEIFS=$IFS                # backup IFS for later restore
 IFS=$(echo -en "\n\b")      # set to newline for find command
 
-# process inputs:
-# shopt
 
 # archive LUT, requires bash 4.0+ associative arrays
 # whole array: ${!archiveLut[@]}
@@ -74,16 +72,22 @@ IFS=$(echo -en "\n\b")      # set to newline for find command
 declare -A archiveLut
 archiveLut=( ["refBin"]="${HOME}/bin" )
 archiveLut+=(
-            ["refSrc"]="${HOME}/src"
             ["refEnv"]="${HOME}"
-            ["refDocs"]="${HOME}/Documents"
-            ["refImages"]="${HOME}/Pictures"
             ["refReadme"]="${HOME}"
-            ["refWallpapers"]="${HOME}/Pictures/wallpapers"
             )
+#           ["refSrc"]="${HOME}/src"
+#           ["refDocs"]="${HOME}/Documents"
+#           ["refImages"]="${HOME}/Pictures"
+#           ["refWallpapers"]="${HOME}/Pictures/wallpapers"
+
 # Add more entries at the end of the list
 #           ["refCkt"]="${HOME}/Downloads/ckt"
-# But be sure 'locate -n 1 ref*' returns what you would expect.
+# But be sure '$locateCmd ref*' returns what you would expect.
+
+#locateCmd="locate --limit 1"
+#echo $locateCmd
+#exit 0;
+
 # Note 2015-11-25: the reason this check is necessary is because it can be a nightmare if
 # things start linking random files to random places. Locate is usually a pretty good utility
 # from what I've seen. On encrypted partitions, however, there are some issues. For one, it is
@@ -96,7 +100,8 @@ archiveLut+=(
 echo -e "\nThese are the reported paths; PLEASE CONFIRM BEFORE PROCEEDING:\n"
 echo "Paired entries in table: ${#archiveLut[@]}"
 for key in ${!archiveLut[@]}; do
-    echo -e "Contents of `locate -n 1 ${key}`\twill be linked to: "${archiveLut[${key}]}""
+# allow full table: 'if -z/unset $locateCmd ; then ... '
+    echo -e "Contents of `locate --limit 1 ${key}`\twill be linked to: "${archiveLut[${key}]}""
 done
 echo -e "\nWARNING! Do not proceed unless all pairs of paths are complete and correct."
 echo -e "  e.g. \"Contents of /home/user/setupFiles/refBin  will be linked to: /home/user/someDir\""
@@ -118,7 +123,7 @@ if [[ 1 -eq $cleanFlag ]] ; then
     returnDir=`pwd`         # save so we can return before exit
     # loop and remove links
     for key in ${!archiveLut[@]}; do
-        target=`locate -n 1 ${key}`
+        target=`locate --limit 1 ${key}`
         cd "$target"                # to generate file listing in the following loop
         linkList=`ls -A | grep -v -e "\.git*" -e ".*\.swp" -e "hiddenFilesHere" -e "tnilesProfile*" -e "README*"`
         cd "${archiveLut[${key}]}"  # critical! go to the usual dest dir
@@ -156,7 +161,7 @@ returnDir=`pwd`         # save so we can return before exit
 
 # Second, create links for all files not yet on the system
 for key in ${!archiveLut[@]}; do
-    target=`locate -n 1 ${key}`
+    target=`locate --limit 1 ${key}`
     cd "$target"                  # to generate file listing in the following loop
     for fh in `ls -A | grep -v  -e "\.git*" -e ".*\.swp" -e "hiddenFilesHere" -e "tnilesProfile*" -e "README*"`; do
         if [[ 1 -eq $testFlag ]] ; then
