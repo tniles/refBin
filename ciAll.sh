@@ -46,7 +46,7 @@ fileName="tempABCxyzThisIsATempFile.txt"
 cleartool lsco -avobs -cview -short | sort -k 5 | /bin/grep -v personalSubsystems > $fileName
 
 # comment provided?
-if [ $# > 0 ] ; then
+if [ $# -gt 0 ] ; then
 
     # parse
     sed -i 's/\n/ /g' $fileName

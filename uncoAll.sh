@@ -42,11 +42,17 @@ done
 # setup a temp file
 fileName="tempABCxyzThisIsATempFile.txt"
 
-# get files
-cleartool lsco -avobs -cview -short | sort -k 5 > $fileName
+# get list of all co'd files
+if [ `uname -o` != "Cygwin" ] ; then
+    # linux clearcase
+    cleartool lsco -avobs -cview -short | sort -k 5 > $fileName
+else
+    # windows clearcase
+    cleartool lsco -avobs -me -cview -short | sed s^\\\\^/^g | sed s^.:^^ | sort -k 5 > $fileName
+fi
 
 echo "Files unco'd:"
-# uncheckout one at a time
+# uncheckout one at a time, do not keep a backup copy
 while read myLine ; do
     echo "$myLine"
     cleartool unco -rm $myLine
