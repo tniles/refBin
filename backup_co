@@ -88,8 +88,15 @@ else
     echo " % Time backup occurred: `date` %" >> $logFile
 fi
 
-# CC command (ctmegot) to find co'd files
-fileList=`cleartool lsco -avo -cview -short | sort -k 5`
+# get list of all co'd files
+if [ `uname -o` != "Cygwin" ] ; then
+    # linux clearcase
+    fileList=`cleartool lsco -avobs -cview -short | sort -k 5`
+else
+    # windows clearcase
+    fileList=`cleartool lsco -avobs -me -cview -short | sed 's^\\\\^/^g' | sed 's^\(.\)\(:\)^/cygdrive/\L\1^' | sort -k 5`
+fi
+
 echo "" | tee -a $logFile
 echo "Files to backup:" | tee -a $logFile
 echo "$fileList" | tee -a $logFile
