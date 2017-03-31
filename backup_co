@@ -5,8 +5,11 @@
 # Tyler Niles
 # 1/24/2012
 
-bkupTopDir=~/bkup
-bkupDate=`eval date +%Y%m%d`
+#bkupTopDir=~/bkup
+# sending to network drive since using windows clearcase with local view storage
+# One available test for this would be "if[cygwin]"
+bkupTopDir=/cygdrive/h/bkup
+bkupDate=`eval date +%Y%m%d_%H%M%S`
 bkupSubDir=$bkupTopDir/"cc_co_bkup_"$bkupDate
 
 if [ $# -gt 0 ]
@@ -43,7 +46,9 @@ fi
 # Parent Dir detection and creation
 if [ ! -d $bkupTopDir ]
 then
-    mkdir -m 766 $bkupTopDir
+    #mkdir -m 766 $bkupTopDir
+    # One available test for this would be "if[cygwin]"
+    mkdir $bkupTopDir
     echo ""
     echo "Directory does not exist... making dir $bkupTopDir"
 else
@@ -54,7 +59,9 @@ fi
 # Sub Dir detection and creation
 if [ ! -d $bkupSubDir ]
 then
-    mkdir -m 766 $bkupSubDir
+    #mkdir -m 766 $bkupSubDir
+    # One available test for this would be "if[cygwin]"
+    mkdir $bkupSubDir
     echo "Directory does not exist... making dir $bkupSubDir"
 else
     echo ""
