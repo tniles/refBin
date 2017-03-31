@@ -5,7 +5,9 @@
 # 10/4/2012
 ################################################################################
 
-while getopts "hc: " Option ; do
+commentString=""
+
+while getopts ":hcm:?" Option ; do
   case $Option in
     h )
         echo "Usage:  $0 [-h | -c \"comment\"]"
@@ -20,6 +22,10 @@ while getopts "hc: " Option ; do
         exit 0
         ;;
     c ) 
+        # grab comment string for multiple check-in
+        commentString="$OPTARG"
+        ;;
+    m ) 
         # grab comment string for multiple check-in
         commentString="$OPTARG"
         ;;
@@ -39,18 +45,19 @@ while getopts "hc: " Option ; do
   # shift $(($OPTIND - 1))
 done
 
+#echo $commentString
+
 # setup a temp file
 fileName="tempABCxyzThisIsATempFile.txt"
 
 # get files
-cleartool lsco -avobs -cview -short | sort -k 5 | /bin/grep -v personalSubsystems > $fileName
+cleartool lsco -avobs -me -cview -short | sed s^\\\\^/^g | sed s^.:^^ | sort -k 5 > $fileName
 
 # comment provided?
 if [ $# -gt 0 ] ; then
 
     # parse
     sed -i 's/\n/ /g' $fileName
-
     echo "file dump:" ; cat $fileName ; echo "$commentString"
     #cleartool ci -c "$commentString"
 

@@ -18,6 +18,7 @@ fi
 
 if [ "$1" == "" ] ; then
   echo "Error: missing 1st file argument!"
+  echo "       (Expects linux-style file path)"
   echo "Eg: `basename $0` foo.txt -> This will diff foo.txt with its previous version"
   echo "Eg: `basename $0` foo.txt baz.txt -> This will diff foo.txt and baz.txt"
   exit -1
