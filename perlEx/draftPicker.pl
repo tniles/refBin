@@ -26,7 +26,8 @@ use Scalar::Util qw(looks_like_number) ;
 ###########
 
 # Generic use vars
-my $varName;
+my $varNameFirst;
+my $varNameLast;
 my $varSkill;
 my $person;
 my $team1skill = 0;
@@ -57,10 +58,10 @@ while (<CFG>)
 
   # grab whitespace delimited words
   #my ($varName, $varSkill) = ( split /\s+/ , $_ );
-  my ($varName, $varSkill) = ( split /,/ , $_ );
-  if ( defined $varName && defined $varSkill )
+  my ($varNameFirst, $varNameLast, $varSkill) = ( split /,/ , $_ );
+  if ( defined $varNameFirst && defined $varNameLast && defined $varSkill )
   {
-    #say "$varName = $varSkill\n";
+    #say "$varNameFirst $varNameLast = $varSkill\n";
   }
   else
   {
@@ -80,7 +81,7 @@ while (<CFG>)
   }
 
   # now assign input to hash
-  $players{ $varName } = $varSkill;
+  $players{ $varNameFirst . ' ' . $varNameLast } = $varSkill;
 
 }
 
