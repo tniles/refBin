@@ -74,17 +74,18 @@ archiveLut=( ["refBin"]="${HOME}/bin" )
 archiveLut+=(
             ["refEnv"]="${HOME}"
             ["refReadme"]="${HOME}"
+            ["refDocs"]="${HOME}/Documents"
+            ["refSrc"]="${HOME}/src"
+            ["refImages"]="${HOME}/Pictures"
+            ["refWallpapers"]="${HOME}/Pictures/wallpapers"
             )
-#           ["refSrc"]="${HOME}/src"
-#           ["refDocs"]="${HOME}/Documents"
-#           ["refImages"]="${HOME}/Pictures"
-#           ["refWallpapers"]="${HOME}/Pictures/wallpapers"
 
 # Add more entries at the end of the list
 #           ["refCkt"]="${HOME}/Downloads/ckt"
 # But be sure '$locateCmd ref*' returns what you would expect.
 
 #locateCmd="locate --limit 1"
+#locateCmd="find $HOME -name"
 #echo $locateCmd
 #exit 0;
 
@@ -101,7 +102,7 @@ echo -e "\nThese are the reported paths; PLEASE CONFIRM BEFORE PROCEEDING:\n"
 echo "Paired entries in table: ${#archiveLut[@]}"
 for key in ${!archiveLut[@]}; do
 # allow full table: 'if -z/unset $locateCmd ; then ... '
-    echo -e "Contents of `locate --limit 1 ${key}`\twill be linked to: "${archiveLut[${key}]}""
+    echo -e "Contents of `find $HOME -name ${key}`\twill be linked to: "${archiveLut[${key}]}""
 done
 echo -e "\nWARNING! Do not proceed unless all pairs of paths are complete and correct."
 echo -e "  e.g. \"Contents of /home/user/setupFiles/refBin  will be linked to: /home/user/someDir\""
@@ -123,7 +124,7 @@ if [[ 1 -eq $cleanFlag ]] ; then
     returnDir=`pwd`         # save so we can return before exit
     # loop and remove links
     for key in ${!archiveLut[@]}; do
-        target=`locate --limit 1 ${key}`
+        target=`find $HOME -name ${key}`
         cd "$target"                # to generate file listing in the following loop
         linkList=`ls -A | grep -v -e "\.git*" -e ".*\.swp" -e "hiddenFilesHere" -e "tnilesProfile*" -e "README*"`
         cd "${archiveLut[${key}]}"  # critical! go to the usual dest dir
@@ -161,7 +162,7 @@ returnDir=`pwd`         # save so we can return before exit
 
 # Second, create links for all files not yet on the system
 for key in ${!archiveLut[@]}; do
-    target=`locate --limit 1 ${key}`
+    target=`find $HOME -name ${key}`
     cd "$target"                  # to generate file listing in the following loop
     for fh in `ls -A | grep -v  -e "\.git*" -e ".*\.swp" -e "hiddenFilesHere" -e "tnilesProfile*" -e "README*"`; do
         if [[ 1 -eq $testFlag ]] ; then
